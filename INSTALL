@@ -1,0 +1,104 @@
+CRAB Installation - https://crab.today
+    Copyright (C) 2021 Ole-Henrik Jakobsen
+
+Software installation of CRAB
+
+Hardware Requirements:
+	Raspberry Pi (any with headers)
+	Up to two wired DS18B20 temperature sensors (default cable lenght is max 2 meters long, but can be cut off and lenghtened with a screened CAT6 cable. Tested up to 25 meters.
+	
+Optional hardware:
+	GPS module supported by gpsd (MTK3339 chipset), or ModemManager/mmcli (untested).
+	Display (not covered in this section as it exists a lot of different models, example of a tiny OLED display is included as a script, but not further documented).
+	PiJuice HAT (example scripts provided, but not documented)
+
+
+This guide assume the hardware has been configured accordingly to other guides out there, and will guide you through the software steps.
+
+
+1) Prepare the RaspberryPi device
+	Install RaspberryPi OS, update it, configure the internet, and connect to it with SSH or use TTY via HDMI. Several guides already exists, google it.
+
+
+2) Setting up sensors (skip this step if the temperature sensor is already working and configured)
+	# sudo bash -c 'printf "\n#Enable GPIO\ndtoverlay=w1-gpio" >> /boot/config.txt'
+	# sudo bash -c 'printf "\nw1-gpio\nw1-therm" >> /etc/modules'
+	# sudo reboot
+	
+	Check if RasPi has discovered the sensors (you should see directories named ex. 28-0f0f0f0f0f0f):
+	# ls /sys/bus/w1/devices/
+
+
+3) Getting the required packages
+	# sudo apt install git php-cli php-curl
+	# cd ~
+	# git clone https://github.com/olehj/CRAB.git
+	# git clone https://github.com/olehj/phpTempReader.git
+
+
+4) Test and configure phpTempReader
+	Run the script to check the data and that the script works:
+	# cd ~/phpTempReader
+	# php tempreader.php
+	
+	If you have output on your sensors, edit the config.ini file and set "TEST = 0"
+
+
+5) Create a user and get an API key
+	Go to https://crab.today/p/registration and create a user
+	Then login to CRAB and select "API keys" in the drop down menu (mouse over the CRAB logo)
+	Enter name and description, and select "Send minimal feedback" (other options is available for custom scripts you might make yourself).
+
+	
+6) Configure CRAB on the device
+	Copy the KEY and paste it into "crab.ini" file on the RaspberryPi
+	If not planning to use a GPS module, enter LATITUDE and LONGITUDE manually and set GPS_FALLBACK to "1"
+
+
+7) Test local CRAB script
+	# cd ~/CRAB
+	# php crab.php
+	
+	If the output looks good, set "TEST = 0" in the crab.ini file.
+
+
+8) Copy (and edit if needed) bash script
+	# cp ~/CRAB/startup-script-examples/crab-basic.sh ~/crab.sh
+
+
+9) Setup CRONJOB
+	Start cron edior:
+	# crontab -e
+	
+	Default: For hourly reporting, enter and save follwing:
+	0 * * * * /home/pi/crab.sh &> /dev/null
+	
+	Data saving: For daily reporting at 12:00, enter and save following:
+	0 12 * * * /home/pi/crab.sh &> /dev/null
+	
+	Optional: Some cases might have a use for the @reboot variable, can be added to existing cron jobs.
+	@reboot /home/pi/crab.sh &> /dev/null
+	
+	The crontabs can be adjusted freely to you likings, but the server won't accept anything less than 55 minutes between each report.
+
+
+10) The final required step
+	Once the CRAB script has run successfully, login to CRAB and configure and assign the sensors under "Configure sensors"
+	When configured, the data will be visible on the public map in the specified location configured.
+
+
+11) Optional: GPS module (skip this step if there's no GPS module attached/installed)
+	(NB! ModemManager/mmcli has not been tested)
+	Install one of the following:
+	# sudo apt install gpsd gpsd-clients
+	or
+	# sudo apt install modemmanager
+	
+	# cd ~
+	# git clone https://github.com/olehj/phpGPSReader.git
+	
+	Test if module works:
+	# cd ~/phpGPSReader
+	# php gpsreader.php
+	
+	If successful, edit config.ini and set "TEST = 0" and include GPSReader in the crab.ini file. You might also want to disable GPS_FALLBACK if the location is NOT static.
