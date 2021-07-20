@@ -1,0 +1,14 @@
+CRAB - CLI script for https://crab.today - simple CLI
+    Copyright (C) 2017-2018  Ole-Henrik Jakobsen
+
+
+Software requirements:
+	php-cli			To run PHP code at command line interface
+	php-curl		Enable cURL library for PHP to send and receive contents on the web.
+
+
+Use CRAB:
+	php crab-cli.php [options]
+
+For CLI CRAB help
+	php crab-cli.php help

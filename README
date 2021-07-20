@@ -1,0 +1,52 @@
+CRAB - CLI script for https://crab.today using other libraries.
+    Copyright (C) 2017-2018  Ole-Henrik Jakobsen
+
+
+Software requirements:
+	php-cli			To run PHP code at command line interface
+	php-curl		Enable cURL library for PHP to send and receive contents on the web.
+	phpTempReader		Script to receive temperatures from sensors.
+    Optional:
+	phpGPSReader		Script to receive GPS data from gpspipe.
+	`-> gpsd		Daemon for the GPS sensor.
+	`-> gpsd-clients	Package containing gpspipe.
+	or
+	`-> modemmanager	For reading location data from a USB 3G modem.
+	python			For display and control button.
+	`-> luma.oled		Library for display, install: 'pip install --upgrade luma.oled'
+
+
+Supported sensors and devices:
+	DS18B20 and similar which output the same:
+		- Serial numbers
+		- Temperature in XX.XXX format
+		- Temperature unit: C/F
+	
+	All GPS devices talking with gpsd should be good to go,
+	ModemManager (mmcli) is untested.
+
+
+Configuration of CRAB:
+	More information inside the configuration file:
+	Config file: crab.ini
+
+
+Use CRAB:
+	php crab.php [optional: arguments]
+
+
+Optional CRAB CLI arguments (use if you can't use phpTempReader and/or phpGPSReader):
+	Use crab-cli.php and read README-cli
+
+
+Additional python script for OLED display with a control button:
+	Run:
+		python crab-dispctrl.py
+	
+	This will automatically run crab.php with the included libraries.
+	Adjust settings in the crab-dispctrl.py file manually and adjust for your liking.
+	It's mainly made for 128x64 OLED screen, but other screens can probably be programmed into it.
+	
+	Button function:
+		Short press		Run crab.php and send data to the database.
+		Long press (>5s)	Shutdown the device.
