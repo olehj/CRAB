@@ -37,8 +37,8 @@ if [ -n "$LOGFILE" ]; then
 fi
 
 if [ $CONNECTION == true ]; then
-  # Enter $HOME/crab:
-  cd $HOMEDIR/crab
+  # Enter $HOME/CRAB:
+  cd $HOMEDIR/CRAB
 
   for i in {1..10}
   do
