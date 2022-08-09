@@ -33,6 +33,9 @@ Configuration of CRAB:
 
 Use CRAB:
 	php crab.php [optional: arguments]
+	
+	For sending the log file to the server:
+	php crab.php log
 
 
 Optional CRAB CLI arguments (use if you can't use phpTempReader and/or phpGPSReader):

@@ -19,7 +19,7 @@
     Requirements: php-cli, php-curl, phpTempReader
     Optional: phpGPSReader
     
-    Last updated: 2020-04-15
+    Last updated: 2022-08-08
 */
 
 // get variables from the configuration file and parse it
@@ -27,6 +27,7 @@ $ini_file = "crab.ini";
 $ini_array = parse_ini_file($ini_file);
 
 // put array data into variables
+$cli_argv = (isset($_SERVER["argv"][1]) ? $_SERVER["argv"][1] : null);
 $key = (isset($ini_array["KEY"]) ? $ini_array["KEY"] : null);
 $crabtest = (isset($ini_array["TEST"]) ? $ini_array["TEST"] : null);
 $connwait = (isset($ini_array["CONNECTION_WAIT"]) ? $ini_array["CONNECTION_WAIT"] : 10);
@@ -37,6 +38,8 @@ $lat = (isset($ini_array["GPS_FALLBACK"]) ? (isset($ini_array["LATITUDE"]) ? $in
 $long = (isset($ini_array["GPS_FALLBACK"]) ? (isset($ini_array["LONGITUDE"]) ? $ini_array["LONGITUDE"] : null) : null);
 $cusfile = (isset($ini_array["CUSTOM_FILE"]) ? $ini_array["CUSTOM_FILE"] : null);
 $imgfile = (isset($ini_array["WEBCAM_FILE"]) ? $ini_array["WEBCAM_FILE"] : null);
+$temp = 0;
+$unit = "";
 
 $host = "send.crab.today";
 $port = 443;
@@ -46,46 +49,45 @@ if($crabtest && !preg_match("/^([a-zA-Z0-9_-]{32})$/", $key)) {
 	die("\nInvalid key, check if you have the correct key and try again.\n");
 }
 
-// run TempReader if set
-if($tempr_path && is_file("" . $tempr_path . "/tempreader.php")) {
-	chdir($tempr_path);
-	include_once("" . $tempr_path . "/tempreader.php");
-	
-	$tempreader = tempreader(1); // 1 = get separate arrays
-	if(!is_array($tempreader)) { die("No temperature data received. Check your configuration."); }
-	
-	if(!$use_sensor) { $use_sensor = key($tempreader); }
-	
-	$unit = $tempreader[$use_sensor]["unit"];
-	$temp_str = $tempreader[$use_sensor]["temperature"];
-	$serial_str = $tempreader[$use_sensor]["serialnumber"];
-	
-	$temp = implode(";", $temp_str);		// We can include all temperatures and sensors using implode().
-	$serial = implode(";", $serial_str);		// We can include all sensor serial numbers using implode().
-							// We only accept max two sensors anyway: one for the water and one for the air. Define the sensor(s) on the webpage.
-							// Only the two first sensors will be accepted, only one is mandatory. Rest will be ignored.
-}
+if($cli_argv != "log") {
+	// run TempReader if set
+	if($tempr_path && is_file("" . $tempr_path . "/tempreader.php")) {
+		chdir($tempr_path);
+		include_once("" . $tempr_path . "/tempreader.php");
+		
+		$tempreader = tempreader(1); // 1 = get separate arrays
+		if(!is_array($tempreader)) { die("No temperature data received. Check your configuration."); }
+		
+		if(!$use_sensor) { $use_sensor = key($tempreader); }
+		
+		$unit = $tempreader[$use_sensor]["unit"];
+		$temp_str = $tempreader[$use_sensor]["temperature"];
+		$serial_str = $tempreader[$use_sensor]["serialnumber"];
+		
+		$temp = implode(";", $temp_str);		// We can include all temperatures and sensors using implode().
+		$serial = implode(";", $serial_str);		// We can include all sensor serial numbers using implode().
+								// We only accept max two sensors anyway: one for the water and one for the air. Define the sensor(s) on the webpage.
+								// Only the two first sensors will be accepted, only one is mandatory. Rest will be ignored.
+	}
 
-// run GPSReader if set
-if($gps_path && is_file("" . $gps_path . "/gpsreader.php")) {
-	chdir($gps_path);
-	include_once("" . $gps_path . "/gpsreader.php");
-	
-	$gpsreader = gpsreader();
-	
-	$latitude = $gpsreader["latitude"];
-	$longitude = $gpsreader["longitude"];
-	
-	if(preg_match('/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/', $latitude) && preg_match('/^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/', $longitude)) {
-		$lat = $latitude;
-		$long = $longitude;
+	// run GPSReader if set
+	if($gps_path && is_file("" . $gps_path . "/gpsreader.php")) {
+		chdir($gps_path);
+		include_once("" . $gps_path . "/gpsreader.php");
+		
+		$gpsreader = gpsreader();
+		
+		$latitude = $gpsreader["latitude"];
+		$longitude = $gpsreader["longitude"];
+		
+		if(preg_match('/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/', $latitude) && preg_match('/^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/', $longitude)) {
+			$lat = $latitude;
+			$long = $longitude;
+		}
+		
+		if(!$lat && !$long) { die("No location data received.\n"); }
 	}
 }
-
-if(!$lat && !$long) {
-	die("No location data received.\n");
-}
-
 
 if(!$crabtest) {
 	$timeout = $connwait*60; // $min*60s
@@ -96,6 +98,10 @@ if(!$crabtest) {
 	fclose($fp);
 	
 	$url = "https://" . $host . "";
+	
+	if($cli_argv == "log") {
+		$serial = "__log";
+	}
 	
 	$post = array('key'    => $key,
 			'lat'    => $lat,
