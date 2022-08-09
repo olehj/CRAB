@@ -23,8 +23,8 @@ charge = pijuice.status.GetChargeLevel()
 charge = charge['data'] if charge['error'] == 'NO_ERROR' else charge['error']
 temp =  pijuice.status.GetBatteryTemperature()
 temp = temp['data'] if temp['error'] == 'NO_ERROR' else temp['error']
-vbat = pijuice.status.GetBatteryVoltage()	        
-vbat = vbat['data'] if vbat['error'] == 'NO_ERROR' else vbat['error'] 
+vbat = pijuice.status.GetBatteryVoltage()
+vbat = vbat['data'] if vbat['error'] == 'NO_ERROR' else vbat['error']
 ibat = pijuice.status.GetBatteryCurrent()
 ibat = ibat['data'] if ibat['error'] == 'NO_ERROR' else ibat['error']
 vio =  pijuice.status.GetIoVoltage()
@@ -46,4 +46,4 @@ elif status_powerInputIn != 'NOT_PRESENT' and status_powerInput5vIo == 'NOT_PRES
 status_powerInput = status_powerInput.replace("_", " ").lower()
 
 print('Power Input:',status_powerInput,'('+str(vio/1000)+'V',str(iio)+'mAh)')
-print('Battery:    ',status_battery,'('+str(charge)+'%',str(temp)+chr(176)+'C',str(vbat/1000)+'V',str(ibat)+'mAh)')
+print('Battery:    ',status_battery,'('+str(charge)+'%',str(temp)+'C',str(vbat/1000)+'V',str(ibat)+'mAh)')

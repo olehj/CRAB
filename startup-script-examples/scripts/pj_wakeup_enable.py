@@ -8,7 +8,7 @@ while not os.path.exists('/dev/i2c-1'):
     time.sleep(0.1)
 
 pj = pijuice.PiJuice(1, 0x14)
-
+pj.power.SetWakeUpOnCharge(1,non_volatile=True)
 pj.rtcAlarm.SetWakeupEnabled(True)
 
 a={}
